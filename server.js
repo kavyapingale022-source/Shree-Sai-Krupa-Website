@@ -28,22 +28,47 @@ if (useKV) {
 }
 
 const readDB = async () => {
+    const defaultServices = [
+        { id: 1, title: 'Hair Cutting', description: 'Expert precision fade or classic scissor cut.', price: '₹120 / ₹150', icon: 'content_cut' },
+        { id: 2, title: 'Beard Trimming', description: 'Precision line-up and contouring.', price: '₹70', icon: 'face' },
+        { id: 3, title: 'Shaving', description: 'Classic clean shave experience.', price: '₹80', icon: 'cut' },
+        { id: 4, title: 'Face Massage/Scrub', description: 'Relaxing massage and exfoliating scrub.', price: '₹250', icon: 'spa' },
+        { id: 5, title: 'Facial', description: 'Complete facial treatment for skin rejuvenation.', price: '₹500', icon: 'auto_fix_high' },
+        { id: 6, title: 'Cream Colour', description: 'Professional hair coloring.', price: '₹250', icon: 'palette' }
+    ];
+
     if (useKV) {
         let admin = await kv.get('admin');
         if (!admin) {
             admin = { email: 'amitdivekar02@gmail.com', password: 'AmitDivekar_Saloon_Admin@2000' };
             await kv.set('admin', admin);
         }
+        let services = await kv.get('services');
+        if (!services) {
+            services = defaultServices;
+            await kv.set('services', services);
+        }
         const gallery = await kv.get('gallery') || [];
         const messages = await kv.get('messages') || [];
         const analytics = await kv.get('analytics') || [];
-        return { admin, gallery, messages, analytics };
+        return { admin, gallery, messages, analytics, services };
     } else {
         if (!fs.existsSync(DB_FILE)) {
-             const defaultDb = { admin: { email: 'amitdivekar02@gmail.com', password: 'AmitDivekar_Saloon_Admin@2000' }, gallery: [], messages: [], analytics: [] };
+             const defaultDb = { 
+                 admin: { email: 'amitdivekar02@gmail.com', password: 'AmitDivekar_Saloon_Admin@2000' }, 
+                 gallery: [], 
+                 messages: [], 
+                 analytics: [],
+                 services: defaultServices
+             };
              fs.writeFileSync(DB_FILE, JSON.stringify(defaultDb, null, 2));
         }
-        return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+        const db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+        if (!db.services) {
+            db.services = defaultServices;
+            fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+        }
+        return db;
     }
 };
 
@@ -53,6 +78,7 @@ const writeDB = async (data) => {
         await kv.set('gallery', data.gallery);
         await kv.set('messages', data.messages);
         await kv.set('analytics', data.analytics);
+        await kv.set('services', data.services);
     } else {
         fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
     }
@@ -63,6 +89,15 @@ app.get('/api/gallery', async (req, res) => {
     try {
         const db = await readDB();
         res.json(db.gallery || []);
+    } catch (e) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.get('/api/services', async (req, res) => {
+    try {
+        const db = await readDB();
+        res.json(db.services || []);
     } catch (e) {
         res.status(500).json({ error: 'Server error' });
     }
@@ -151,7 +186,8 @@ app.get('/api/admin/data', requireAdmin, async (req, res) => {
             analytics: db.analytics || [],
             admin: { email: db.admin.email },
             gallery: db.gallery || [],
-            messages: db.messages || []
+            messages: db.messages || [],
+            services: db.services || []
         });
     } catch (e) {
         res.status(500).json({ error: 'Server error' });
@@ -178,6 +214,47 @@ app.delete('/api/admin/gallery/:id', requireAdmin, async (req, res) => {
         const db = await readDB();
         db.gallery = db.gallery.filter(g => g.id !== parseInt(req.params.id));
         await writeDB(db);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/admin/services', requireAdmin, async (req, res) => {
+    try {
+        const { id, title, description, price, icon } = req.body;
+        if (!title || !description || !price || !icon) {
+            return res.status(400).json({ success: false, error: 'All fields are required' });
+        }
+        
+        const db = await readDB();
+        db.services = db.services || [];
+        
+        if (id) {
+            // Update existing service
+            const index = db.services.findIndex(s => s.id === parseInt(id));
+            if (index !== -1) {
+                db.services[index] = { id: parseInt(id), title, description, price, icon };
+            }
+        } else {
+            // Add new service
+            db.services.push({ id: Date.now(), title, description, price, icon });
+        }
+        
+        await writeDB(db);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/admin/services/:id', requireAdmin, async (req, res) => {
+    try {
+        const db = await readDB();
+        if (db.services) {
+            db.services = db.services.filter(s => s.id !== parseInt(req.params.id));
+            await writeDB(db);
+        }
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: 'Server error' });

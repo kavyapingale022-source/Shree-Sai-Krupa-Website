@@ -37,6 +37,7 @@
                 <nav class="space-y-2">
                     <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors active"><span class="material-symbols-outlined">dashboard</span> Dashboard</button>
                     <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors"><span class="material-symbols-outlined">analytics</span> Analytics</button>
+                    <button onclick="switchTab('services')" id="nav-services" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors"><span class="material-symbols-outlined">cut</span> Services</button>
                     <button onclick="switchTab('gallery')" id="nav-gallery" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors"><span class="material-symbols-outlined">photo_library</span> Gallery</button>
                     <button onclick="switchTab('messages')" id="nav-messages" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors"><span class="material-symbols-outlined">mail</span> Messages</button>
                     <button onclick="switchTab('settings')" id="nav-settings" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors"><span class="material-symbols-outlined">settings</span> Settings</button>
@@ -94,6 +95,54 @@
                     <div class="w-full h-64">
                         <canvas id="trafficChart"></canvas>
                     </div>
+                </div>
+            </div>
+
+            <!-- Services Tab -->
+            <div id="tab-services" class="tab-content">
+                <header class="mb-10 flex justify-between items-center">
+                    <h2 class="text-3xl font-bold">Services Management</h2>
+                </header>
+                <div class="glass-panel p-6 rounded-2xl mb-8">
+                    <h3 class="text-xl font-bold mb-4">Add / Edit Service</h3>
+                    <form id="addServiceForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="hidden" id="serviceId">
+                        <div>
+                            <label class="text-sm text-gray-400 uppercase mb-1 block">Title</label>
+                            <input id="serviceTitle" type="text" required class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]" placeholder="e.g. Hair Cutting">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-400 uppercase mb-1 block">Price</label>
+                            <input id="servicePrice" type="text" required class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]" placeholder="e.g. ₹150">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="text-sm text-gray-400 uppercase mb-1 block">Description</label>
+                            <input id="serviceDescription" type="text" required class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]" placeholder="e.g. Expert precision fade...">
+                        </div>
+                        <div class="md:col-span-2 flex items-end gap-4">
+                            <div class="flex-1">
+                                <label class="text-sm text-gray-400 uppercase mb-1 block">Material Icon Name (<a href="https://fonts.google.com/icons?icon.set=Material+Symbols" target="_blank" class="text-blue-400 hover:underline">Browse</a>)</label>
+                                <input id="serviceIcon" type="text" required class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]" placeholder="e.g. content_cut">
+                            </div>
+                            <button type="submit" class="px-6 py-3 bg-secondary rounded-xl font-bold gold-glow transition-all active:scale-95 text-[#3c2f00] whitespace-nowrap">Save Service</button>
+                            <button type="button" onclick="document.getElementById('addServiceForm').reset(); document.getElementById('serviceId').value = '';" class="px-6 py-3 border border-white/10 hover:bg-white/5 rounded-xl font-bold transition-all active:scale-95">Clear</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="glass-panel rounded-2xl overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-white/5 border-b border-white/10">
+                            <tr>
+                                <th class="p-4 text-sm uppercase text-gray-400 font-semibold">Icon</th>
+                                <th class="p-4 text-sm uppercase text-gray-400 font-semibold">Title</th>
+                                <th class="p-4 text-sm uppercase text-gray-400 font-semibold">Price</th>
+                                <th class="p-4 text-sm uppercase text-gray-400 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servicesList" class="divide-y divide-white/10">
+                            <!-- Services injected here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -183,6 +232,9 @@
 
                 // Gallery
                 renderGallery();
+
+                // Services
+                renderServices();
 
                 // Messages
                 renderMessages();
@@ -308,6 +360,79 @@
                 `;
             });
         }
+
+        function renderServices() {
+            const container = document.getElementById('servicesList');
+            container.innerHTML = '';
+            if(!adminData.services || adminData.services.length === 0) {
+                container.innerHTML = '<tr><td colspan="4" class="p-4 text-gray-400">No services found.</td></tr>';
+                return;
+            }
+
+            adminData.services.forEach(service => {
+                container.innerHTML += `
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="p-4"><span class="material-symbols-outlined text-secondary">${service.icon}</span></td>
+                        <td class="p-4">
+                            <div class="font-bold text-white">${service.title}</div>
+                            <div class="text-sm text-gray-400 truncate max-w-xs">${service.description}</div>
+                        </td>
+                        <td class="p-4 text-secondary">${service.price}</td>
+                        <td class="p-4">
+                            <div class="flex gap-2">
+                                <button onclick="editService(${service.id})" class="text-blue-400 hover:text-blue-300 p-2 rounded-lg bg-blue-400/10 hover:bg-blue-400/20 transition-colors">
+                                    <span class="material-symbols-outlined text-sm">edit</span>
+                                </button>
+                                <button onclick="deleteService(${service.id})" class="text-red-400 hover:text-red-300 p-2 rounded-lg bg-red-400/10 hover:bg-red-400/20 transition-colors">
+                                    <span class="material-symbols-outlined text-sm">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.editService = (id) => {
+            const service = adminData.services.find(s => s.id === id);
+            if (service) {
+                document.getElementById('serviceId').value = service.id;
+                document.getElementById('serviceTitle').value = service.title;
+                document.getElementById('servicePrice').value = service.price;
+                document.getElementById('serviceDescription').value = service.description;
+                document.getElementById('serviceIcon').value = service.icon;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        window.deleteService = async (id) => {
+            if(confirm('Delete this service?')) {
+                const res = await fetch('/api/admin/services/' + id, { method: 'DELETE' });
+                if(res.ok) loadData();
+            }
+        };
+
+        // Add / Edit Service
+        document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('serviceId').value;
+            const title = document.getElementById('serviceTitle').value;
+            const price = document.getElementById('servicePrice').value;
+            const description = document.getElementById('serviceDescription').value;
+            const icon = document.getElementById('serviceIcon').value;
+            
+            const res = await fetch('/api/admin/services', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, title, price, description, icon })
+            });
+
+            if(res.ok) {
+                document.getElementById('addServiceForm').reset();
+                document.getElementById('serviceId').value = '';
+                loadData();
+            }
+        });
 
         // Add Gallery
         document.getElementById('addGalleryForm').addEventListener('submit', async (e) => {
