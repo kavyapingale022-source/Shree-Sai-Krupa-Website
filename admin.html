@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SHREE SAI KRUPA | Admin Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        body {
+            background-color: #141313;
+            color: #e5e2e1;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .text-secondary { color: #e9c349; }
+        .bg-secondary { background-color: #e9c349; color: #3c2f00; }
+        .gold-glow:hover { box-shadow: 0 0 20px rgba(233, 195, 73, 0.3); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 glass-panel rounded-2xl">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold mb-2">Admin Portal</h2>
+            <p class="text-gray-400 text-sm tracking-widest uppercase">Shree Sai Krupa</p>
+        </div>
+        <form id="loginForm" class="space-y-6">
+            <div class="space-y-2">
+                <label class="text-sm text-gray-400 uppercase">Email</label>
+                <input id="email" type="email" required class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]" placeholder="admin@example.com">
+            </div>
+            <div class="space-y-2">
+                <label class="text-sm text-gray-400 uppercase">Password</label>
+                <input id="password" type="password" required class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]" placeholder="••••••••">
+            </div>
+            <div id="errorMsg" class="text-red-400 text-sm hidden">Invalid email or password.</div>
+            <button type="submit" class="w-full py-3 bg-secondary rounded-xl font-bold gold-glow transition-all active:scale-95">Sign In</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = '/dashboard.html';
+                } else {
+                    errorMsg.textContent = data.message;
+                    errorMsg.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorMsg.textContent = 'Server error. Please try again.';
+                errorMsg.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

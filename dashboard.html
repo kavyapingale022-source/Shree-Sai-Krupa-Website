@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SHREE SAI KRUPA | Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        body {
+            background-color: #141313;
+            color: #e5e2e1;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .text-secondary { color: #e9c349; }
+        .bg-secondary { background-color: #e9c349; color: #3c2f00; }
+        .border-secondary { border-color: #e9c349; }
+        .gold-glow:hover { box-shadow: 0 0 20px rgba(233, 195, 73, 0.3); }
+        .nav-link.active { background-color: rgba(255, 255, 255, 0.1); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="hidden">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="w-64 glass-panel border-r border-white/10 flex flex-col justify-between">
+            <div class="p-6">
+                <h1 class="text-xl font-bold mb-8 text-secondary">Admin Portal</h1>
+                <nav class="space-y-2">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors active"><span class="material-symbols-outlined">dashboard</span> Dashboard</button>
+                    <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors"><span class="material-symbols-outlined">analytics</span> Analytics</button>
+                    <button onclick="switchTab('gallery')" id="nav-gallery" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors"><span class="material-symbols-outlined">photo_library</span> Gallery</button>
+                    <button onclick="switchTab('messages')" id="nav-messages" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors"><span class="material-symbols-outlined">mail</span> Messages</button>
+                    <button onclick="switchTab('settings')" id="nav-settings" class="nav-link w-full flex items-center gap-3 text-gray-400 hover:text-white p-3 rounded-lg transition-colors"><span class="material-symbols-outlined">settings</span> Settings</button>
+                    <a href="/" target="_blank" class="w-full flex items-center gap-3 text-blue-400 hover:text-blue-300 p-3 rounded-lg transition-colors mt-4 border border-blue-400/20"><span class="material-symbols-outlined">open_in_new</span> Preview Site</a>
+                </nav>
+            </div>
+            <div class="p-6 border-t border-white/10">
+                <button id="logoutBtn" class="flex items-center gap-3 text-red-400 hover:text-red-300 transition-colors w-full p-2">
+                    <span class="material-symbols-outlined">logout</span> Sign Out
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto p-10">
+            
+            <!-- Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-content active">
+                <header class="mb-10">
+                    <h2 class="text-3xl font-bold">Welcome Back</h2>
+                </header>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-secondary">
+                        <div class="text-gray-400 text-sm tracking-widest uppercase mb-2">Total Visits</div>
+                        <div class="text-3xl font-bold text-white" id="statVisits">--</div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-secondary">
+                        <div class="text-gray-400 text-sm tracking-widest uppercase mb-2">Messages Received</div>
+                        <div class="text-3xl font-bold text-white" id="statQueries">--</div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-green-400">
+                        <div class="text-gray-400 text-sm tracking-widest uppercase mb-2">System Status</div>
+                        <div class="text-xl font-bold text-green-400 mt-2 flex items-center gap-2"><span class="material-symbols-outlined text-sm">circle</span> Online</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="tab-analytics" class="tab-content">
+                <header class="mb-10">
+                    <h2 class="text-3xl font-bold">Traffic Analytics</h2>
+                </header>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-secondary">
+                        <div class="text-gray-400 text-sm tracking-widest uppercase mb-2">Total All-Time Visits</div>
+                        <div class="text-3xl font-bold text-white" id="statAnalyticsTotal">--</div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-green-400">
+                        <div class="text-gray-400 text-sm tracking-widest uppercase mb-2">Visits Today</div>
+                        <div class="text-3xl font-bold text-white" id="statAnalyticsToday">--</div>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-xl font-bold mb-6">Traffic Over Last 7 Days</h3>
+                    <div class="w-full h-64">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery Tab -->
+            <div id="tab-gallery" class="tab-content">
+                <header class="mb-10 flex justify-between items-center">
+                    <h2 class="text-3xl font-bold">Gallery Management</h2>
+                </header>
+                <div class="glass-panel p-6 rounded-2xl mb-8">
+                    <h3 class="text-xl font-bold mb-4">Add New Image</h3>
+                    <form id="addGalleryForm" class="flex gap-4 items-end">
+                        <div class="flex-1">
+                            <label class="text-sm text-gray-400 uppercase mb-1 block">Image URL</label>
+                            <input id="galleryUrl" type="url" required class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]" placeholder="https://...">
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-sm text-gray-400 uppercase mb-1 block">Description (Alt text)</label>
+                            <input id="galleryAlt" type="text" class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]" placeholder="e.g. Haircut style...">
+                        </div>
+                        <button type="submit" class="px-6 py-3 bg-secondary rounded-xl font-bold gold-glow transition-all active:scale-95 text-[#3c2f00]">Add Image</button>
+                    </form>
+                </div>
+                <div id="galleryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Gallery items injected here -->
+                </div>
+            </div>
+
+            <!-- Messages Tab -->
+            <div id="tab-messages" class="tab-content">
+                <header class="mb-10">
+                    <h2 class="text-3xl font-bold">User Messages</h2>
+                </header>
+                <div id="messagesContainer" class="space-y-4">
+                    <!-- Messages injected here -->
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-content">
+                <header class="mb-10">
+                    <h2 class="text-3xl font-bold">Admin Settings</h2>
+                </header>
+                <div class="max-w-md glass-panel p-8 rounded-2xl">
+                    <h3 class="text-xl font-bold mb-6">Change Credentials</h3>
+                    <form id="credentialsForm" class="space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-sm text-gray-400 uppercase">New Email</label>
+                            <input id="newEmail" type="email" required class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm text-gray-400 uppercase">New Password</label>
+                            <input id="newPassword" type="password" required class="w-full bg-[#1c1b1b] border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#e9c349]">
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-secondary rounded-xl font-bold gold-glow transition-all active:scale-95 text-[#3c2f00]">Update Credentials</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let adminData = {};
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('nav-' + tabId).classList.add('active');
+        }
+
+        async function loadData() {
+            try {
+                const res = await fetch('/api/admin/data');
+                if (!res.ok) throw new Error('Unauthorized');
+                adminData = await res.json();
+                
+                // Dashboard
+                document.getElementById('statVisits').textContent = adminData.stats.visits;
+                document.getElementById('statQueries').textContent = adminData.stats.queries;
+
+                // Settings
+                document.getElementById('newEmail').value = adminData.admin.email;
+
+                // Analytics
+                renderAnalytics();
+
+                // Gallery
+                renderGallery();
+
+                // Messages
+                renderMessages();
+
+                document.body.classList.remove('hidden');
+            } catch (err) {
+                window.location.href = '/admin.html';
+            }
+        }
+
+        let trafficChartInstance = null;
+
+        function renderAnalytics() {
+            const timestamps = adminData.analytics || [];
+            document.getElementById('statAnalyticsTotal').textContent = timestamps.length;
+            
+            // Process dates for the last 7 days
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            let todayVisits = 0;
+            const last7Days = Array(7).fill(0);
+            const labels = [];
+            
+            for(let i=6; i>=0; i--) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            }
+
+            timestamps.forEach(ts => {
+                const d = new Date(ts);
+                d.setHours(0,0,0,0);
+                const diffTime = today.getTime() - d.getTime();
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+                
+                if (diffDays === 0) todayVisits++;
+                
+                if (diffDays >= 0 && diffDays <= 6) {
+                    last7Days[6 - diffDays]++;
+                }
+            });
+
+            document.getElementById('statAnalyticsToday').textContent = todayVisits;
+
+            const ctx = document.getElementById('trafficChart').getContext('2d');
+            if(trafficChartInstance) trafficChartInstance.destroy();
+            
+            trafficChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Page Visits',
+                        data: last7Days,
+                        borderColor: '#e9c349',
+                        backgroundColor: 'rgba(233, 195, 73, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#9ca3af', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { ticks: { color: '#9ca3af' }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderGallery() {
+            const container = document.getElementById('galleryContainer');
+            container.innerHTML = '';
+            if(!adminData.gallery || adminData.gallery.length === 0) {
+                container.innerHTML = '<p class="text-gray-400">No images in gallery.</p>';
+                return;
+            }
+
+            adminData.gallery.forEach(img => {
+                container.innerHTML += `
+                    <div class="glass-panel p-4 rounded-xl relative group">
+                        <div class="aspect-square bg-cover bg-center rounded-lg mb-4" style="background-image: url('${img.url}')"></div>
+                        <p class="text-sm text-gray-400 truncate">${img.alt || 'No description'}</p>
+                        <button onclick="deleteGallery(${img.id})" class="absolute top-6 right-6 bg-red-500/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            if(!adminData.messages || adminData.messages.length === 0) {
+                container.innerHTML = '<div class="glass-panel p-8 rounded-2xl"><p class="text-gray-400">No messages received yet.</p></div>';
+                return;
+            }
+
+            adminData.messages.forEach(msg => {
+                const date = new Date(msg.date).toLocaleString();
+                // Simple regex to check if contact is an email to enable reply
+                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(msg.contact);
+                const replyBtn = isEmail ? 
+                    `<a href="mailto:${msg.contact}?subject=Reply from Shree Sai Krupa" class="text-secondary hover:text-white flex items-center gap-1 text-sm"><span class="material-symbols-outlined text-sm">reply</span> Reply via Email</a>` : 
+                    `<span class="text-gray-500 text-sm">Phone Number Provided</span>`;
+
+                container.innerHTML += `
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-bold text-lg">${msg.name}</h4>
+                                <p class="text-gray-400 text-sm">${msg.contact} • ${date}</p>
+                            </div>
+                            ${replyBtn}
+                        </div>
+                        <p class="text-gray-200 bg-white/5 p-4 rounded-lg">${msg.message}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // Add Gallery
+        document.getElementById('addGalleryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('galleryUrl').value;
+            const alt = document.getElementById('galleryAlt').value;
+            
+            const res = await fetch('/api/admin/gallery', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, alt })
+            });
+
+            if(res.ok) {
+                document.getElementById('galleryUrl').value = '';
+                document.getElementById('galleryAlt').value = '';
+                loadData(); // Reload all data
+            }
+        });
+
+        // Delete Gallery
+        window.deleteGallery = async (id) => {
+            if(confirm('Delete this image?')) {
+                const res = await fetch('/api/admin/gallery/' + id, { method: 'DELETE' });
+                if(res.ok) loadData();
+            }
+        }
+
+        // Update Credentials
+        document.getElementById('credentialsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('newEmail').value;
+            const password = document.getElementById('newPassword').value;
+
+            if(confirm('Update credentials? You will be logged out.')) {
+                const res = await fetch('/api/admin/credentials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if(res.ok) {
+                    window.location.href = '/admin.html';
+                }
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/admin.html';
+        });
+
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
