@@ -3,7 +3,7 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
-const { kv } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
 
 const app = express();
 const PORT = 8081;
@@ -15,8 +15,17 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(__dirname));
 
-// DB Helpers - Hybrid Strategy (Vercel KV or Local JSON)
-const useKV = !!process.env.KV_REST_API_URL;
+// DB Helpers - Hybrid Strategy (Upstash Redis or Local JSON)
+const useKV = !!(process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL);
+
+let kv;
+if (useKV) {
+    // Connect using either legacy KV vars or new Upstash vars
+    kv = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN,
+    });
+}
 
 const readDB = async () => {
     if (useKV) {
